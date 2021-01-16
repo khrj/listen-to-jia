@@ -1,0 +1,10 @@
+{
+  "devDependencies": {
+    "@prisma/cli": "2.14.0"
+  },
+  "dependencies": {
+    "@prisma/client": "2.14.0",
+    "@slack/bolt": "^3.0.0",
+    "@slack/oauth": "^2.0.0"
+  }
+}
