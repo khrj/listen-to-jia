@@ -60,7 +60,7 @@ app.event('reaction_added', async ({ event }) => {
 
 async function main() {
     await app.start(process.env.PORT || 3000)
-    console.log('Lightning Delete running ⚡️')
+    console.log('Listen to Jia running ‼️')
 }
 main()
 
