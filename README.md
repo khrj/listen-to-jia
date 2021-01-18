@@ -1,6 +1,6 @@
 # Listen to [Jia](https://github.com/cjdenio/jia)
 
-Made for the [Hack Club Slack](https://hackclub.com/slack), "Listen to Jia" is a bot that deletes messages on which Jia reacts with ‼️ automatically.
+Made for the [Hack Club Slack](https://hackclub.com/slack), _Listen to Jia_ is a bot that deletes messages on which Jia reacts with ‼️ automatically.
 
 
 ## Authorize
