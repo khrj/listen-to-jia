@@ -45,15 +45,15 @@ const installer = new InstallProvider({
 
 app.event('reaction_added', async ({ event }) => {
     if (event.user === jia && event.reaction === invalidReaction) {
-        try {
-            const result = await installer.authorize({ userId: event.item_user })
+        console.log("LISTEN")
+        const result = await installer.authorize({ userId: event.item_user })
+
+        if (result.userToken) {
             await app.client.chat.delete({
                 token: result.userToken,
                 channel: event.item.channel,
                 ts: event.item.ts
             })
-        } catch {
-            // Not authed
         }
     }
 })
