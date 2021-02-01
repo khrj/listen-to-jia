@@ -1,11 +1,11 @@
-const { randomBytes } = require("crypto")
-const { PrismaClient } = require('@prisma/client')
+import { randomBytes } from "crypto"
+import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
-const { InstallProvider } = require('@slack/oauth')
-const { App, ExpressReceiver } = require('@slack/bolt')
+import { InstallationQuery, InstallProvider } from '@slack/oauth'
+import { App, ExpressReceiver } from '@slack/bolt'
 
-const receiver = new ExpressReceiver({ signingSecret: process.env.SLACK_SIGNING_SECRET })
+const receiver = new ExpressReceiver({ signingSecret: process.env.SLACK_SIGNING_SECRET! })
 
 const app = new App({
     token: process.env.SLACK_BOT_TOKEN,
@@ -16,8 +16,8 @@ const jia = "U01HJ78R466"
 const invalidReaction = "bangbang"
 
 const installer = new InstallProvider({
-    clientId: process.env.SLACK_CLIENT_ID,
-    clientSecret: process.env.SLACK_CLIENT_SECRET,
+    clientId: process.env.SLACK_CLIENT_ID!,
+    clientSecret: process.env.SLACK_CLIENT_SECRET!,
     stateSecret: randomBytes(20).toString('hex'),
     installationStore: {
         storeInstallation: async (installation) => {
@@ -38,7 +38,8 @@ const installer = new InstallProvider({
                     slackID: InstallQuery.userId
                 }
             })
-            return JSON.parse(user.installation)
+
+            return JSON.parse(user!.installation)
         },
     },
 })
@@ -46,9 +47,9 @@ const installer = new InstallProvider({
 app.event('reaction_added', async ({ event }) => {
     if (event.user === jia && event.reaction === invalidReaction) {
         console.log("LISTEN")
-        const result = await installer.authorize({ userId: event.item_user })
+        const result = await installer.authorize({ userId: event.item_user } as InstallationQuery<boolean>)
 
-        if (result.userToken) {
+        if (result.userToken && "channel" in event.item) {
             await app.client.chat.delete({
                 token: result.userToken,
                 channel: event.item.channel,
@@ -59,7 +60,7 @@ app.event('reaction_added', async ({ event }) => {
 })
 
 async function main() {
-    await app.start(process.env.PORT || 3000)
+    await app.start(process.env.PORT ? parseInt(process.env.PORT) : 3000)
     console.log('Listen to Jia running ‼️')
 }
 main()

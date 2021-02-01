@@ -105,3 +105,6 @@ dist
 
 # Prisma
 prisma/migrations
+
+# Compiled
+*.js
