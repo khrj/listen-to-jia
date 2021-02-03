@@ -76,7 +76,3 @@ receiver.router.get('/', async (_, res) => {
 receiver.router.get('/slack/oauth_redirect', async (req, res) => {
     await installer.handleCallback(req, res)
 })
-
-receiver.router.get('/ping', async (_, res) => {
-    res.send("Online")
-})
