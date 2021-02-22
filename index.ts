@@ -63,7 +63,14 @@ async function main() {
     await app.start(process.env.PORT ? parseInt(process.env.PORT) : 3000)
     console.log('Listen to Jia running ‼️')
 }
+
 main()
+  .catch(e => {
+    throw e
+  })
+  .finally(async () => {
+    await prisma.$disconnect()
+  })
 
 receiver.router.get('/', async (_, res) => {
     const url = await installer.generateInstallUrl({
