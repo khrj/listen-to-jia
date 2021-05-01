@@ -67,10 +67,10 @@
   dependencies:
     "@types/node" ">=12.0.0"
 
-"@slack/oauth@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@slack/oauth/-/oauth-2.0.0.tgz#20858672dc9e04ebe0b79b6029c72b724a32f152"
-  integrity sha512-cs+UvRnS78ZM/WNuAp4WDDsCOPMwT4YIvBDyoIZjhS0MyGv2xZ4w/Klu89DcnMe3OdRI1DDhsQOLcHr6EArxGQ==
+"@slack/oauth@^2.0.0", "@slack/oauth@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@slack/oauth/-/oauth-2.0.1.tgz#56f8f3cd45258465e2c45860f1ca60e307126e30"
+  integrity sha512-Htiwa70u+uZuWNvYvMjCUuALTl7hMb/1v0sQhrXDDY0dh9tWWUxZCvL6dAR6pxqMCXMjhS3j+tq4o157SGVhRg==
   dependencies:
     "@slack/logger" "^2.0.0"
     "@slack/web-api" "^5.7.0"
