@@ -1,85 +1,93 @@
-import { randomBytes } from "crypto"
-import { PrismaClient } from '@prisma/client'
-const prisma = new PrismaClient()
-
-import { InstallationQuery, InstallProvider } from '@slack/oauth'
-import { App, ExpressReceiver } from '@slack/bolt'
-
-const receiver = new ExpressReceiver({ signingSecret: process.env.SLACK_SIGNING_SECRET! })
-
-const app = new App({
-    token: process.env.SLACK_BOT_TOKEN,
-    receiver
-})
+import { PrismaClient } from "@prisma/client"
+import { App } from "@slack/bolt"
 
 const jia = "U01HJ78R466"
 const invalidReaction = "bangbang"
 
-const installer = new InstallProvider({
-    clientId: process.env.SLACK_CLIENT_ID!,
-    clientSecret: process.env.SLACK_CLIENT_SECRET!,
-    stateSecret: randomBytes(20).toString('hex'),
-    installationStore: {
-        storeInstallation: async (installation) => {
-            await prisma.user.upsert({
-                where: { slackID: installation.user.id },
-                create: {
-                    slackID: installation.user.id,
-                    installation: JSON.stringify(installation)
-                },
-                update: {
-                    installation: JSON.stringify(installation)
-                }
-            })
-        },
-        fetchInstallation: async (InstallQuery) => {
-            const user = await prisma.user.findUnique({
-                where: {
-                    slackID: InstallQuery.userId
-                }
-            })
-
-            return JSON.parse(user!.installation)
-        },
-    },
+const prisma = new PrismaClient()
+const app = new App({
+    token: process.env.SLACK_BOT_TOKEN,
+    signingSecret: process.env.SLACK_SIGNING_SECRET,
 })
 
-app.event('reaction_added', async ({ event }) => {
+app.event("reaction_added", async ({ event }) => {
     if (event.user === jia && event.reaction === invalidReaction) {
         console.log("LISTEN")
-        const result = await installer.authorize({ userId: event.item_user } as InstallationQuery<boolean>)
 
-        if (result.userToken && "channel" in event.item) {
-            await app.client.chat.delete({
-                token: result.userToken,
-                channel: event.item.channel,
-                ts: event.item.ts
+        if ("channel" in event.item && "ts" in event.item) {
+            const user = await prisma.user.findUnique({
+                where: {
+                    slackID: event.item_user,
+                },
             })
+
+            if (user && user.enabled) {
+                await app.client.chat.delete({
+                    token: process.env.SLACK_ADMIN_TOKEN,
+                    channel: event.item.channel,
+                    ts: event.item.ts,
+                })
+            }
         }
+    }
+})
+
+app.command("/l2j-toggle", async ({ command, ack, client }) => {
+    // Acknowledge command request
+    await ack()
+
+    let currentUser = await prisma.user.findUnique({
+        where: {
+            slackID: command.user_id,
+        },
+    })
+
+    if (!currentUser || !currentUser.enabled) {
+        await prisma.user.upsert({
+            where: {
+                slackID: command.user_id,
+            },
+            create: {
+                slackID: command.user_id,
+                enabled: true,
+            },
+            update: {
+                enabled: true,
+            },
+        })
+
+        await client.chat.postEphemeral({
+            channel: command.channel_id,
+            user: command.user_id,
+            text: "Listen to Jia enabled :owl:! Your incorrect messages will now be automatically deleted.",
+        })
+    } else {
+        await prisma.user.update({
+            where: {
+                slackID: command.user_id,
+            },
+            data: {
+                enabled: false,
+            },
+        })
+
+        await client.chat.postEphemeral({
+            channel: command.channel_id,
+            user: command.user_id,
+            text: "Listen to Jia disabled! Your incorrect messages will no longer be automatically deleted.",
+        })
     }
 })
 
 async function main() {
     await app.start(process.env.PORT ? parseInt(process.env.PORT) : 3000)
-    console.log('Listen to Jia running ‼️')
+    console.log("Listen to Jia running ‼️")
 }
 
 main()
-  .catch(e => {
-    throw e
-  })
-  .finally(async () => {
-    await prisma.$disconnect()
-  })
-
-receiver.router.get('/', async (_, res) => {
-    const url = await installer.generateInstallUrl({
-        scopes: ['channels:history', 'reactions:read'],
-        userScopes: ["chat:write"],
+    .catch(e => {
+        throw e
     })
-    res.redirect(url)
-})
-
-receiver.router.get('/slack/oauth_redirect', async (req, res) => {
-    await installer.handleCallback(req, res)
-})
+    .finally(async () => {
+        await prisma.$disconnect()
+    })
